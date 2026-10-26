@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Puig Systems · Gestió del projecte</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@400;500&display=swap">
+<style>
+/* Layout: capçalera amb una traça de circuit com a barra de progrés, filtre per responsable i quatre columnes de targetes. */
+:root {
+  color-scheme: light;
+  --bg: #F1F2F3;
+  --surface: #FFFFFF;
+  --sunk: #E7E9EB;
+  --ink: #0C0D0F;
+  --muted: #5B6068;
+  --line: #D3D6DA;
+  --accent: #2749E8;
+  --on-accent: #FFFFFF;
+  --ok: #1D7549;
+  --f-display: 'Noto Serif', Georgia, 'Times New Roman', serif;
+  --f-body: 'Noto Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D0E10;
+    --surface: #17191C;
+    --sunk: #1E2125;
+    --ink: #F0F1F3;
+    --muted: #9AA0A8;
+    --line: #2C2F34;
+    --accent: #8FA6FF;
+    --on-accent: #0D0E10;
+    --ok: #5CC38F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D0E10;
+  --surface: #17191C;
+  --sunk: #1E2125;
+  --ink: #F0F1F3;
+  --muted: #9AA0A8;
+  --line: #2C2F34;
+  --accent: #8FA6FF;
+  --on-accent: #0D0E10;
+  --ok: #5CC38F;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 14px;
+  line-height: 1.5;
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 22px; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+
+.wrap { max-width: 720px; margin-inline: auto; display: grid; gap: 22px; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand .word { font-family: var(--f-display); font-size: 20px; font-weight: 500; }
+.brand .sys { font-size: 10px; letter-spacing: .38em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; text-wrap: balance; }
+.sub { margin: 0; color: var(--muted); }
+.links { display: grid; gap: 10px; }
+.links a { display: grid; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; color: var(--ink); text-decoration: none; }
+.links a:hover { border-color: var(--ink); }
+.links strong { font-family: var(--f-display); font-weight: 500; font-size: 18px; }
+.links span { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <div class="brand"><span class="word">Puig</span><span class="sys">Systems</span></div>
+  </div>
+  <h1>Gestió del projecte</h1>
+  <p class="sub">Fase 4 · SMX2B · Jugraj Singh i Federico Jonas Sanchez Araujo</p>
+  <nav class="links" aria-label="Documents">
+    <a href="kanban.html"><strong>Tauler Kanban</strong><span>Tasques per estat i responsable.</span></a>
+    <a href="gantt.html"><strong>Planificació temporal</strong><span>Diagrama de Gantt d'octubre de 2026 a maig de 2027.</span></a>
+  </nav>
+</div>
+<script>// sense scripts</script>
+</body>
+</html>
