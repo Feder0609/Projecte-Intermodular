@@ -6,7 +6,7 @@
 <title>Gantt Puig Systems</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@400;500&display=swap">
 <style>
-/* Layout: capçalera, llegenda, diagrama amb columna d'etiquetes fixa i escala mensual (oct 2026 a jun 2027), comprovació final. */
+/* Layout: capçalera, franja de xifres, diagrama amb dates reals (1/10/2026 a 30/6/2027), taula de càrrega mensual i comprovació final. */
 :root {
   color-scheme: light;
   --bg: #F1F2F3;
@@ -18,6 +18,7 @@
   --accent: #2749E8;
   --on-accent: #FFFFFF;
   --ok: #1D7549;
+  --warn: #A5440E;
   --f-display: 'Noto Serif', Georgia, 'Times New Roman', serif;
   --f-body: 'Noto Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -33,6 +34,7 @@
     --accent: #8FA6FF;
     --on-accent: #0D0E10;
     --ok: #5CC38F;
+    --warn: #F0A06B;
     color-scheme: dark;
   }
 }
@@ -46,6 +48,7 @@
   --accent: #8FA6FF;
   --on-accent: #0D0E10;
   --ok: #5CC38F;
+  --warn: #F0A06B;
   color-scheme: dark;
 }
 
@@ -62,15 +65,23 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 22px; }
+.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 24px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h2 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 22px; }
 
 .head { display: grid; gap: 6px; }
 .brand { display: flex; align-items: baseline; gap: 10px; }
 .brand .word { font-family: var(--f-display); font-size: 20px; font-weight: 500; }
 .brand .sys { font-size: 10px; letter-spacing: .38em; text-transform: uppercase; color: var(--muted); }
 h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; text-wrap: balance; }
-.sub { margin: 0; color: var(--muted); max-width: 72ch; }
+.sub { margin: 0; color: var(--muted); max-width: 74ch; }
+
+/* Resum d'hores */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--ink); border-radius: 6px; overflow: hidden; }
+.tile { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.tile .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.tile .v { font-family: var(--f-mono); font-size: 28px; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12.5px; color: var(--muted); }
 
 .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; font-size: 13px; }
 .legend .it { display: inline-flex; align-items: center; gap: 8px; }
@@ -80,23 +91,25 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
 .sw.t { background: transparent; }
 .sw.opt { background: transparent; border-style: dashed; }
 .sw.done { background: var(--muted); border-color: var(--muted); opacity: .5; }
-.sw.today { width: 2px; height: 16px; border: 0; background: var(--accent); }
+.sw.off { border-color: var(--line); background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 5px); }
+.sw.now { width: 2px; height: 16px; border: 0; background: var(--accent); }
 
 /* Diagrama */
 .scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
-.chart { --lab: 232px; min-width: 940px; }
+.chart { --lab: 300px; min-width: 1200px; }
 .mhead { display: grid; grid-template-columns: var(--lab) 1fr; border-bottom: 1px solid var(--ink); }
 .mhead .lab { position: sticky; left: 0; z-index: 3; background: var(--surface); padding: 10px 14px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; align-items: end; }
-.months { display: grid; grid-template-columns: repeat(9, 1fr); }
-.months div { padding: 8px 6px 8px 8px; border-left: 1px solid var(--line); font-size: 12px; font-weight: 600; display: grid; line-height: 1.25; }
+.months { display: grid; }
+.months div { padding: 8px 6px 8px 8px; border-left: 1px solid var(--line); font-size: 12px; font-weight: 600; display: grid; line-height: 1.25; min-width: 0; }
 .months small { font-family: var(--f-mono); font-weight: 400; font-size: 10px; color: var(--muted); }
 .months .marge { color: var(--muted); }
 
 .rows { position: relative; }
 .overlay { position: absolute; left: var(--lab); right: 0; top: 0; bottom: 0; pointer-events: none; z-index: 1; }
-.hatch { position: absolute; top: 0; bottom: 0; left: calc(100% * 8 / 9); width: calc(100% / 9);
-  background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 8px); opacity: .8; }
-.today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); left: 8.96%; }
+.mline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.hatch, .band { position: absolute; top: 0; bottom: 0; background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 7px); }
+.band { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); }
 .today span { position: absolute; top: 4px; left: 6px; font-family: var(--f-mono); font-size: 10px; color: var(--accent); white-space: nowrap; background: var(--surface); padding: 0 3px; }
 
 .bloc { display: grid; grid-template-columns: var(--lab) 1fr; background: var(--sunk); border-bottom: 1px solid var(--line); }
@@ -104,26 +117,39 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
 .row { display: grid; grid-template-columns: var(--lab) 1fr; border-bottom: 1px solid var(--line); }
 .row .lab { position: sticky; left: 0; z-index: 3; background: var(--surface); padding: 8px 14px; display: grid; gap: 1px; align-content: center; min-width: 0; }
 .row .name { font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
-.row .meta { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.row .meta { font-family: var(--f-mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .row .dep { font-size: 11.5px; color: var(--muted); }
-.tl { position: relative; min-height: 52px;
-  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
-  background-size: calc(100% / 9) 100%; }
+.tl { position: relative; min-height: 58px; }
 .bar { position: absolute; top: 50%; transform: translateY(-50%); height: 18px; border-radius: 2px; border: 2px solid var(--ink); z-index: 2; }
 .bar[data-o="Jugraj"] { background: var(--accent); border-color: var(--accent); }
 .bar[data-o="Federico"] { background: var(--ink); }
 .bar[data-o="Tots dos"] { background: var(--surface); }
 .bar.opt { border-style: dashed; background: transparent; }
 .bar.done { opacity: .45; }
+.blab { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; font-family: var(--f-mono); font-size: 11px; background: var(--surface); padding: 0 4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Càrrega mensual */
+.load { display: grid; gap: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 680px; }
+th, td { text-align: left; padding: 8px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--ink); }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+tr.total td { font-weight: 600; border-bottom: 0; }
+td.marge { color: var(--muted); }
+.cellbar { display: grid; grid-template-columns: 52px minmax(80px, 1fr) 92px; gap: 10px; align-items: center; font-family: var(--f-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.cellbar .p { color: var(--muted); font-size: 11.5px; }
+.meter { height: 8px; background: var(--sunk); border-radius: 2px; position: relative; overflow: hidden; }
+.meter i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); }
+.meter.f i { background: var(--ink); }
+.meter.over i { background: var(--warn); }
 
 /* Comprovació final */
 .check { display: grid; gap: 12px; }
-.check h2 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 22px; }
 .qs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
 .q { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
 .q h3 { margin: 0; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .q p { margin: 0; overflow-wrap: anywhere; }
-.hint { margin: 0; color: var(--muted); font-size: 13px; max-width: 80ch; }
+.hint { margin: 0; color: var(--muted); font-size: 13px; max-width: 84ch; }
 </style>
 </head>
 <body>
@@ -131,8 +157,10 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
   <header class="head">
     <div class="brand"><span class="word">Puig</span><span class="sys">Systems</span></div>
     <h1>Planificació temporal</h1>
-    <p class="sub">Diagrama de Gantt orientatiu de l'octubre de 2026 al maig de 2027, amb el juny com a marge. És una referència inicial, no un calendari inamovible.</p>
+    <p class="sub">Diagrama de Gantt orientatiu amb dates, dies laborables i hores estimades per tasca. Va del 5 d'octubre de 2026 al 28 de maig de 2027, amb el juny com a marge. És una referència inicial, no un calendari inamovible.</p>
   </header>
+
+  <section class="tiles" id="tiles" aria-label="Resum d'hores"></section>
 
   <div class="legend" aria-label="Llegenda">
     <span class="it"><span class="sw j"></span>Jugraj</span>
@@ -140,77 +168,160 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
     <span class="it"><span class="sw t"></span>Tots dos</span>
     <span class="it"><span class="sw opt"></span>Opcional</span>
     <span class="it"><span class="sw done"></span>Fet</span>
-    <span class="it"><span class="sw today"></span>Avui, 26/10/2026</span>
+    <span class="it"><span class="sw off"></span>Vacances i festius</span>
+    <span class="it" id="legtoday"><span class="sw now"></span><span>Avui</span></span>
   </div>
 
   <div class="scroll" tabindex="0" role="region" aria-label="Diagrama de Gantt, desplaça horitzontalment si cal">
     <div class="chart" id="chart"></div>
   </div>
 
-  <section class="check" aria-labelledby="ct">
-    <h2 id="ct">Comprovació final</h2>
-    <div class="qs">
-      <div class="q"><h3>Hi apareixen les parts importants?</h3><p>Sí. Hi ha set blocs: anàlisi i disseny, preparació tècnica, xarxa i seguretat, serveis bàsics, aplicació de gestió, web i còpies, i validació i lliurament.</p></div>
-      <div class="q"><h3>Les durades són raonables?</h3><p>Cada tasca dura entre dues setmanes i mig trimestre. Només la documentació s'allarga, perquè avança en paral·lel durant tot el projecte.</p></div>
-      <div class="q"><h3>Hi ha temps per a proves i correccions?</h3><p>Sí. Hi ha unes cinc setmanes entre mitjan abril i mitjan maig, abans de la memòria i la presentació.</p></div>
-      <div class="q"><h3>Encaixa en el temps disponible?</h3><p>Tot acaba a final de maig i el juny queda lliure. Si el termini real és abans, es retallaria pel final de la llista de prioritats: web i còpies primer, després el correu.</p></div>
+  <section class="load" aria-labelledby="lt">
+    <h2 id="lt">Càrrega per mes</h2>
+    <p class="hint" id="loadhint"></p>
+    <div class="scroll" tabindex="0" role="region" aria-label="Taula de càrrega mensual">
+      <table id="loadtbl"></table>
     </div>
   </section>
 
-  <p class="hint">Les dependències s'indiquen sota cada tasca. Si falta temps, es manté l'ordre de prioritats del document: xarxa segmentada, firewall, servidors bàsics, base de dades, gestió de clients i reparacions, còpies, web pública i, al final, el correu.</p>
+  <section class="check" aria-labelledby="ct">
+    <h2 id="ct">Comprovació final</h2>
+    <div class="qs">
+      <div class="q"><h3>Hi apareixen les parts importants?</h3><p id="q1"></p></div>
+      <div class="q"><h3>Les durades són raonables?</h3><p id="q2"></p></div>
+      <div class="q"><h3>Hi ha temps per a proves i correccions?</h3><p id="q3"></p></div>
+      <div class="q"><h3>Encaixa en el temps disponible?</h3><p id="q4"></p></div>
+    </div>
+  </section>
+
+  <p class="hint" id="assump"></p>
 </div>
 <script>
 (function () {
   'use strict';
-  var MONTHS = ['Oct', 'Nov', 'Des', 'Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun'];
-  var YEARS = { 0: '2026', 3: '2027' };
-  var N = MONTHS.length;
 
-  // Escala: 0 = inici d'octubre; 1 = inici de novembre; 8 = inici de juny.
+  // ===== Paràmetres de l'estimació (es poden canviar) =====
+  var START = '2026-10-01';        // inici de l'escala
+  var NMONTHS = 9;                 // octubre de 2026 a juny de 2027
+  var CAP = 8;                     // hores setmanals que pot dedicar cada persona
+  var PEOPLE = ['Jugraj', 'Federico'];
+  var HOLIDAYS = ['2026-12-08'];   // festius entre setmana
+  var BREAKS = [                   // vacances (aproximades)
+    { from: '2026-12-23', to: '2027-01-06', name: 'Nadal' },
+    { from: '2027-03-22', to: '2027-03-29', name: 'Setmana Santa' }
+  ];
+
+  // ===== Tasques: dates inclusives, h = hores totals de la tasca =====
+  // Una tasca de «Tots dos» reparteix les hores a parts iguals.
   var BLOCS = [
     { name: 'Anàlisi i disseny', tasks: [
-      { n: 'Document de definició del projecte', s: 0, e: 0.9, o: 'Tots dos', done: true },
-      { n: 'Model de dades i prototips', s: 0, e: 0.9, o: 'Federico', done: true },
-      { n: 'Diagrama definitiu de la xarxa', s: 0.8, e: 1.4, o: 'Jugraj', after: 'Document de definició' }
+      { id: 'a1', k: 'Definició', n: 'Document de definició del projecte', o: 'Tots dos', s: '2026-10-05', e: '2026-10-23', h: 14, done: true },
+      { id: 'a2', k: 'Model de dades', n: 'Model de dades i prototips', o: 'Federico', s: '2026-10-05', e: '2026-10-23', h: 12, done: true },
+      { id: 'a3', k: 'Diagrama de xarxa', n: 'Diagrama definitiu de la xarxa', o: 'Jugraj', s: '2026-10-26', e: '2026-11-06', h: 6, needs: ['a1'] }
     ]},
     { name: 'Preparació tècnica', tasks: [
-      { n: 'Entorn de virtualització i repositori', s: 1.0, e: 1.6, o: 'Tots dos', after: 'Diagrama de xarxa' },
-      { n: 'Màquines virtuals', s: 1.4, e: 2.0, o: 'Jugraj', after: 'Entorn de virtualització' }
+      { id: 'b1', k: 'Entorn virtual', n: 'Entorn de virtualització i repositori', o: 'Tots dos', s: '2026-11-09', e: '2026-11-20', h: 8, needs: ['a3'] },
+      { id: 'b2', k: 'Màquines virtuals', n: 'Màquines virtuals', o: 'Jugraj', s: '2026-11-23', e: '2026-12-04', h: 10, needs: ['b1'] }
     ]},
     { name: 'Xarxa i seguretat', tasks: [
-      { n: 'VLAN i switch gestionable', s: 1.6, e: 2.3, o: 'Jugraj', after: 'Entorn de virtualització' },
-      { n: 'Firewall i regles entre zones', s: 2.0, e: 2.8, o: 'Jugraj', after: 'VLAN i switch' },
-      { n: 'Proves de cada VLAN', s: 2.6, e: 3.0, o: 'Jugraj', after: 'Firewall' }
+      { id: 'c1', k: 'VLAN', n: 'VLAN i switch gestionable', o: 'Jugraj', s: '2026-12-07', e: '2026-12-22', h: 10, needs: ['b1'] },
+      { id: 'c2', k: 'Firewall', n: 'Firewall i regles entre zones', o: 'Jugraj', s: '2027-01-07', e: '2027-01-29', h: 16, needs: ['c1', 'b2'] },
+      { id: 'c3', k: 'Proves de VLAN', n: 'Proves de cada VLAN', o: 'Jugraj', s: '2027-02-01', e: '2027-02-05', h: 6, needs: ['c2'] }
     ]},
     { name: 'Serveis bàsics', tasks: [
-      { n: 'DNS i DHCP', s: 2.8, e: 3.3, o: 'Jugraj', after: 'Firewall' },
-      { n: 'Directori d\'usuaris i fitxers compartits', s: 3.2, e: 4.0, o: 'Jugraj', after: 'DNS i DHCP' }
+      { id: 'd1', k: 'DNS i DHCP', n: 'DNS i DHCP', o: 'Jugraj', s: '2027-02-08', e: '2027-02-19', h: 8, needs: ['c2'] },
+      { id: 'd2', k: 'Directori', n: 'Directori d\'usuaris i fitxers compartits', o: 'Jugraj', s: '2027-02-22', e: '2027-03-19', h: 18, needs: ['d1'] }
     ]},
     { name: 'Aplicació de gestió', tasks: [
-      { n: 'Base de dades', s: 2.0, e: 3.0, o: 'Federico', after: 'Màquines virtuals' },
-      { n: 'Inici de sessió i rols', s: 3.0, e: 4.0, o: 'Federico', after: 'Base de dades' },
-      { n: 'Gestió de clients i reparacions', s: 4.0, e: 5.3, o: 'Federico', after: 'Inici de sessió' },
-      { n: 'Tauler principal i panell d\'administració', s: 5.0, e: 5.8, o: 'Federico', after: 'Gestió de clients' }
+      { id: 'e1', k: 'Base de dades', n: 'Base de dades', o: 'Federico', s: '2026-11-09', e: '2026-11-27', h: 14, needs: ['a2'] },
+      { id: 'e2', k: 'Inici de sessió', n: 'Inici de sessió i rols', o: 'Federico', s: '2026-11-30', e: '2027-01-15', h: 20, needs: ['e1'] },
+      { id: 'e3', k: 'Clients i reparacions', n: 'Gestió de clients i reparacions', o: 'Federico', s: '2027-01-18', e: '2027-03-05', h: 32, needs: ['e2'] },
+      { id: 'e4', k: 'Tauler principal', n: 'Tauler principal i panell d\'administració', o: 'Federico', s: '2027-04-05', e: '2027-04-23', h: 14, needs: ['e3'] }
     ]},
     { name: 'Web i còpies', tasks: [
-      { n: 'Pàgina web pública', s: 4.5, e: 5.5, o: 'Federico', after: 'Base de dades' },
-      { n: 'Servidor web a la DMZ amb HTTPS', s: 5.3, e: 6.0, o: 'Jugraj', after: 'Pàgina web i firewall' },
-      { n: 'Còpies de seguretat i restauració', s: 5.5, e: 6.4, o: 'Jugraj', after: 'Base de dades' },
-      { n: 'Correu corporatiu', s: 6.0, e: 6.8, o: 'Jugraj', opt: true, after: 'Serveis bàsics' }
+      { id: 'f1', k: 'Pàgina web', n: 'Pàgina web pública', o: 'Federico', s: '2027-03-08', e: '2027-04-02', h: 16, needs: ['e1'] },
+      { id: 'f2', k: 'Còpies', n: 'Còpies de seguretat i restauració', o: 'Jugraj', s: '2027-03-30', e: '2027-04-09', h: 14, needs: ['d2', 'e1'] },
+      { id: 'f3', k: 'Servidor web', n: 'Servidor web a la DMZ amb HTTPS', o: 'Jugraj', s: '2027-04-12', e: '2027-04-23', h: 10, needs: ['f1', 'c2'] },
+      { id: 'f4', k: 'Correu', n: 'Correu corporatiu', o: 'Jugraj', s: '2027-04-26', e: '2027-05-14', h: 8, opt: true, needs: ['d1'] }
     ]},
     { name: 'Validació i lliurament', tasks: [
-      { n: 'Proves de xarxa, aplicació i seguretat', s: 6.3, e: 7.2, o: 'Tots dos', after: 'Servidor web i còpies' },
-      { n: 'Correcció d\'incidències', s: 6.9, e: 7.6, o: 'Tots dos', after: 'Proves' },
-      { n: 'Documentació de la infraestructura', s: 1.0, e: 7.6, o: 'Federico', after: 'En paral·lel a tot el projecte' },
-      { n: 'Memòria i presentació final', s: 7.3, e: 8.0, o: 'Tots dos', after: 'Correcció d\'incidències' }
+      { id: 'g1', k: 'Proves', n: 'Proves de xarxa, aplicació i seguretat', o: 'Tots dos', s: '2027-04-26', e: '2027-05-07', h: 16, needs: ['e4', 'f2', 'f3'] },
+      { id: 'g2', k: 'Correcció', n: 'Correcció d\'incidències', o: 'Tots dos', s: '2027-05-10', e: '2027-05-18', h: 12, needs: ['g1'] },
+      { id: 'g3', k: 'Documentació', n: 'Documentació de la infraestructura', o: 'Federico', s: '2026-11-09', e: '2027-05-14', h: 24, parallel: true, note: 'En paral·lel a tot el projecte' },
+      { id: 'g4', k: 'Memòria', n: 'Memòria i presentació final', o: 'Tots dos', s: '2027-05-19', e: '2027-05-28', h: 24, needs: ['g2'] }
     ]}
   ];
 
-  function range(s, e) {
-    var a = Math.floor(s + 0.001);
-    var b = Math.min(N - 1, Math.max(a, Math.ceil(e - 0.001) - 1));
-    return a === b ? MONTHS[a] : MONTHS[a] + ' – ' + MONTHS[b];
+  // ===== Càlcul =====
+  var DAY = 86400000;
+  var MNAMES = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
+  function ms(s) { var p = s.split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function iso(t) { var d = new Date(t); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); }
+  function dm(s) { var p = s.split('-'); return p[2] + '/' + p[1]; }
+  function fmt(n) { return (Math.round(n * 10) / 10).toString().replace('.', ','); }
+  function isWork(t) {
+    var dow = new Date(t).getUTCDay();
+    if (dow === 0 || dow === 6) return false;
+    var k = iso(t);
+    if (HOLIDAYS.indexOf(k) >= 0) return false;
+    for (var i = 0; i < BREAKS.length; i++) if (k >= BREAKS[i].from && k <= BREAKS[i].to) return false;
+    return true;
   }
+  function workdays(s, e) {
+    var out = [];
+    for (var t = ms(s); t <= ms(e); t += DAY) if (isWork(t)) out.push(t);
+    return out;
+  }
+  function who(t) { return t.o === 'Tots dos' ? PEOPLE : [t.o]; }
+
+  var t0 = ms(START);
+  var months = [];
+  for (var i = 0; i < NMONTHS; i++) {
+    var d = new Date(Date.UTC(2026, 9 + i, 1));
+    var next = Date.UTC(2026, 10 + i, 1);
+    months.push({ t: d.getTime(), days: (next - d.getTime()) / DAY, label: MNAMES[d.getUTCMonth()], year: d.getUTCFullYear(), key: iso(d.getTime()).slice(0, 7) });
+  }
+  var TOTAL = months.reduce(function (a, m) { return a + m.days; }, 0);
+  function pc(t) { return (t - t0) / DAY / TOTAL * 100; }
+
+  var all = [];
+  var byId = {};
+  BLOCS.forEach(function (b) {
+    b.tasks.forEach(function (t) {
+      t.days = workdays(t.s, t.e);
+      all.push(t);
+      byId[t.id] = t;
+    });
+  });
+
+  var weekly = {};
+  var monthly = {};
+  var totals = {};
+  PEOPLE.forEach(function (p) { weekly[p] = {}; monthly[p] = {}; totals[p] = 0; });
+  all.forEach(function (t) {
+    var ps = who(t);
+    var per = t.h / ps.length / t.days.length;
+    ps.forEach(function (p) { totals[p] += t.h / ps.length; });
+    t.days.forEach(function (day) {
+      var wk = day - ((new Date(day).getUTCDay() + 6) % 7) * DAY;
+      var mk = iso(day).slice(0, 7);
+      ps.forEach(function (p) {
+        weekly[p][wk] = (weekly[p][wk] || 0) + per;
+        monthly[p][mk] = (monthly[p][mk] || 0) + per;
+      });
+    });
+  });
+
+  var firstS = all.reduce(function (a, t) { return t.s < a ? t.s : a; }, '9999');
+  var lastE = all.reduce(function (a, t) { return t.e > a ? t.e : a; }, '0000');
+  var projectDays = workdays(firstS, lastE).length;
+  var projectWeeks = projectDays / 5;
+  var totalH = all.reduce(function (a, t) { return a + t.h; }, 0);
+  var doneH = all.reduce(function (a, t) { return a + (t.done ? t.h : 0); }, 0);
+  var peak = 0;
+  PEOPLE.forEach(function (p) { Object.keys(weekly[p]).forEach(function (k) { if (weekly[p][k] > peak) peak = weekly[p][k]; }); });
+
   function el(tag, cls, text) {
     var n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -218,26 +329,66 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
     return n;
   }
 
-  var chart = document.getElementById('chart');
+  // ===== Franja de xifres =====
+  function tile(k, v, s) {
+    var t = el('div', 'tile');
+    t.append(el('span', 'k', k), el('span', 'v', v), el('span', 's', s));
+    return t;
+  }
+  var tiles = document.getElementById('tiles');
+  tiles.append(
+    tile('Hores estimades', fmt(totalH) + ' h', fmt(doneH) + ' h ja fetes'),
+    tile('Jugraj', fmt(totals.Jugraj) + ' h', 'unes ' + fmt(totals.Jugraj / projectWeeks) + ' h per setmana'),
+    tile('Federico', fmt(totals.Federico) + ' h', 'unes ' + fmt(totals.Federico / projectWeeks) + ' h per setmana'),
+    tile('Dies laborables', String(projectDays), 'del ' + dm(firstS) + ' al ' + dm(lastE))
+  );
 
+  // ===== Diagrama =====
+  var chart = document.getElementById('chart');
   var mh = el('div', 'mhead');
-  mh.append(el('div', 'lab', 'Tasca'));
-  var ms = el('div', 'months');
-  MONTHS.forEach(function (m, i) {
-    var c = el('div', i === N - 1 ? 'marge' : null);
-    c.append(el('span', null, m));
-    c.append(el('small', null, i === N - 1 ? 'Marge' : (YEARS[i] || ' ')));
-    ms.append(c);
+  mh.append(el('div', 'lab', 'Tasca · dates · dies · hores'));
+  var ms2 = el('div', 'months');
+  ms2.style.gridTemplateColumns = months.map(function (m) { return m.days + 'fr'; }).join(' ');
+  months.forEach(function (m, i) {
+    var c = el('div', i === NMONTHS - 1 ? 'marge' : null);
+    c.append(el('span', null, m.label));
+    c.append(el('small', null, i === NMONTHS - 1 ? 'Marge' : (i === 0 || m.label === 'Gen' ? String(m.year) : ' ')));
+    ms2.append(c);
   });
-  mh.append(ms);
+  mh.append(ms2);
   chart.append(mh);
 
   var rows = el('div', 'rows');
   var ov = el('div', 'overlay');
-  ov.append(el('div', 'hatch'));
-  var td = el('div', 'today');
-  td.append(el('span', null, 'Avui'));
-  ov.append(td);
+  months.forEach(function (m, i) {
+    if (i === 0) return;
+    var l = el('div', 'mline');
+    l.style.left = pc(m.t) + '%';
+    ov.append(l);
+  });
+  var lastM = months[NMONTHS - 1];
+  var hatch = el('div', 'hatch');
+  hatch.style.left = pc(lastM.t) + '%';
+  hatch.style.width = (lastM.days / TOTAL * 100) + '%';
+  ov.append(hatch);
+  BREAKS.forEach(function (b) {
+    var band = el('div', 'band');
+    band.style.left = pc(ms(b.from)) + '%';
+    band.style.width = ((ms(b.to) - ms(b.from)) / DAY + 1) / TOTAL * 100 + '%';
+    ov.append(band);
+  });
+  var now = new Date();
+  var today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  var legToday = document.getElementById('legtoday');
+  if (today >= t0 && today < t0 + TOTAL * DAY) {
+    var td = el('div', 'today');
+    td.style.left = pc(today + DAY / 2) + '%';
+    td.append(el('span', null, 'Avui'));
+    ov.append(td);
+    legToday.lastChild.textContent = 'Avui, ' + pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear();
+  } else {
+    legToday.hidden = true;
+  }
   rows.append(ov);
 
   BLOCS.forEach(function (b) {
@@ -248,22 +399,89 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
       var r = el('div', 'row');
       var lab = el('div', 'lab');
       lab.append(el('span', 'name', t.n));
-      lab.append(el('span', 'meta', range(t.s, t.e) + (t.done ? ' · fet' : '') + (t.opt ? ' · opcional' : '')));
-      if (t.after && !t.done) lab.append(el('span', 'dep', 'Després de: ' + t.after));
+      var hrs = t.o === 'Tots dos' ? fmt(t.h) + ' h (' + fmt(t.h / 2) + '+' + fmt(t.h / 2) + ')' : fmt(t.h) + ' h';
+      lab.append(el('span', 'meta', dm(t.s) + ' – ' + dm(t.e) + ' · ' + t.days.length + ' dies · ' + hrs + (t.opt ? ' · opcional' : '')));
+      if (t.needs && !t.done) lab.append(el('span', 'dep', 'Després de: ' + t.needs.map(function (id) { return byId[id].k; }).join(', ')));
+      else if (t.note) lab.append(el('span', 'dep', t.note));
       var tl = el('div', 'tl');
       var bar = el('div', 'bar' + (t.opt ? ' opt' : '') + (t.done ? ' done' : ''));
       bar.dataset.o = t.o;
-      bar.style.left = 'calc(' + (t.s / N * 100) + '% + 2px)';
-      bar.style.width = 'calc(' + ((t.e - t.s) / N * 100) + '% - 4px)';
+      var sT = ms(t.s);
+      var eT = ms(t.e);
+      bar.style.left = 'calc(' + pc(sT) + '% + 1px)';
+      bar.style.width = 'calc(' + ((eT - sT) / DAY + 1) / TOTAL * 100 + '% - 2px)';
       bar.setAttribute('role', 'img');
-      bar.setAttribute('aria-label', t.n + ', ' + t.o + ', ' + range(t.s, t.e));
-      bar.title = t.n + ' · ' + t.o + ' · ' + range(t.s, t.e);
-      tl.append(bar);
+      bar.setAttribute('aria-label', t.n + ', ' + t.o + ', del ' + dm(t.s) + ' al ' + dm(t.e) + ', ' + t.days.length + ' dies laborables, ' + t.h + ' hores');
+      bar.title = t.n + ' · ' + t.o + ' · ' + dm(t.s) + ' – ' + dm(t.e) + ' · ' + t.days.length + ' dies · ' + t.h + ' h';
+      var bl = el('span', 'blab', fmt(t.h) + ' h');
+      bl.style.left = 'calc(' + pc(eT + DAY) + '% + 6px)';
+      tl.append(bar, bl);
       r.append(lab, tl);
       rows.append(r);
     });
   });
   chart.append(rows);
+
+  // ===== Taula de càrrega mensual =====
+  document.getElementById('loadhint').textContent =
+    'Hores de cada persona repartides entre els dies laborables de cada tasca. La barra la compara amb ' + CAP + ' h per setmana; si passés del 100 % es pintaria en taronja.';
+  var tbl = document.getElementById('loadtbl');
+  var thead = el('thead');
+  var hr = el('tr');
+  ['Mes', 'Dies laborables', 'Jugraj', 'Federico'].forEach(function (x) { hr.append(el('th', null, x)); });
+  thead.append(hr);
+  tbl.append(thead);
+  var tb = el('tbody');
+  function cell(p, h, wd) {
+    var td2 = el('td');
+    var cb = el('div', 'cellbar');
+    var cap = CAP * wd / 5;
+    var util = cap ? h / cap : 0;
+    var m = el('span', 'meter' + (p === 'Federico' ? ' f' : '') + (util > 1 ? ' over' : ''));
+    var fill = el('i');
+    fill.style.width = Math.min(100, util * 100) + '%';
+    m.append(fill);
+    cb.append(el('span', null, fmt(h) + ' h'), m, el('span', 'p', fmt(h / (wd / 5)) + ' h/setmana'));
+    td2.append(cb);
+    return td2;
+  }
+  months.forEach(function (m, i) {
+    var wd = 0;
+    for (var k = 0; k < m.days; k++) if (isWork(m.t + k * DAY)) wd++;
+    var tr = el('tr');
+    tr.append(el('td', null, m.label + ' ' + m.year), el('td', 'num', String(wd)));
+    if (i === NMONTHS - 1) {
+      var mg = el('td', 'marge', 'Marge, sense tasques previstes');
+      mg.colSpan = 2;
+      tr.append(mg);
+    } else {
+      PEOPLE.forEach(function (p) { tr.append(cell(p, monthly[p][m.key] || 0, wd)); });
+    }
+    tb.append(tr);
+  });
+  var tot = el('tr', 'total');
+  tot.append(el('td', null, 'Total'), el('td', 'num', String(projectDays)));
+  PEOPLE.forEach(function (p) { tot.append(el('td', 'num', fmt(totals[p]) + ' h · ' + fmt(totals[p] / projectWeeks) + ' h/setmana de mitjana')); });
+  tb.append(tot);
+  tbl.append(tb);
+
+  // ===== Comprovació final =====
+  var regular = all.filter(function (t) { return !t.parallel; });
+  var dmin = Math.min.apply(null, regular.map(function (t) { return t.days.length; }));
+  var dmax = Math.max.apply(null, regular.map(function (t) { return t.days.length; }));
+  document.getElementById('q1').textContent =
+    'Sí. Hi ha ' + BLOCS.length + ' blocs, des de l\'anàlisi fins a la memòria final, amb ' + all.length + ' tasques. Cada tasca agrupa diverses targetes del Kanban.';
+  document.getElementById('q2').textContent =
+    'Les tasques duren entre ' + dmin + ' i ' + dmax + ' dies laborables; només la documentació s\'allarga, perquè avança en paral·lel. ' +
+    (peak <= CAP
+      ? 'La setmana més carregada és de ' + fmt(peak) + ' h per persona, per sota del límit de ' + CAP + ' h.'
+      : 'Alguna setmana arriba a ' + fmt(peak) + ' h per persona i supera el límit de ' + CAP + ' h; convé repartir-la.');
+  document.getElementById('q3').textContent =
+    'Sí. Hi ha ' + byId.g1.days.length + ' dies laborables per a les proves i ' + byId.g2.days.length + ' per a les correccions, abans de la memòria.';
+  document.getElementById('q4').textContent =
+    'Tot acaba el ' + dm(lastE) + ' i el juny queda lliure com a marge. Són ' + fmt(totalH) + ' h en total: ' + fmt(totals.Jugraj) + ' h per a Jugraj i ' + fmt(totals.Federico) + ' h per a Federico.';
+  document.getElementById('assump').textContent =
+    'Estimació: unes ' + CAP + ' h per setmana i persona. Les hores d\'una tasca de «Tots dos» es reparteixen a parts iguals. Els festius són el 8/12, Nadal (23/12 al 6/1) i Setmana Santa (22 al 29/3), aproximats: ajusta\'ls al calendari del centre. Si falta temps, es manté l\'ordre de prioritats del projecte i el correu és el primer que es retalla.';
 })();
 </script>
 </body>

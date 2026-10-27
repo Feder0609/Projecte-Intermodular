@@ -93,7 +93,7 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
 .primary:disabled, .fbtn:disabled { opacity: .45; cursor: not-allowed; }
 
 /* Formulari de nova tasca */
-.newform { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) auto; gap: 10px; align-items: end; background: var(--surface); border: 1px solid var(--ink); border-radius: 6px; padding: 14px; }
+.newform { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; background: var(--surface); border: 1px solid var(--ink); border-radius: 6px; padding: 14px; }
 .newform label { display: grid; gap: 4px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); min-width: 0; }
 .newform input, .newform select { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; font-size: 14px; letter-spacing: 0; text-transform: none; color: var(--ink); width: 100%; min-width: 0; }
 .note { margin: 0; min-height: 1.5em; font-size: 13px; color: var(--muted); }
@@ -132,14 +132,18 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clam
 
 .hint { margin: 0; color: var(--muted); font-size: 13px; max-width: 80ch; }
 
-@media (max-width: 720px) {
-  .newform { grid-template-columns: minmax(0, 1fr); }
-}
+.newform .wide { grid-column: 1 / -1; }
+.newform .primary { justify-self: start; }
+@media (max-width: 640px) { .newform { grid-template-columns: minmax(0, 1fr); } }
 
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .ghost { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; font-weight: 500; }
 .ghost:hover { border-color: var(--ink); }
 code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); padding: 1px 5px; border-radius: 3px; }
+.pill { margin: 0; justify-self: start; font-family: var(--f-mono); font-size: 11px; padding: 2px 8px; border-radius: 3px; border: 1px solid var(--line); color: var(--muted); }
+.pill[data-s="dirty"] { border-color: var(--ink); color: var(--ink); font-weight: 500; }
+.pill[data-s="clean"] { border-color: var(--ok); color: var(--ok); }
+.link { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font: inherit; }
 </style>
 </head>
 <body>
@@ -156,30 +160,39 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
       <span class="node" id="node"></span>
     </div>
     <p class="pcount" id="pcount"></p>
+    <p class="pill" id="state" hidden></p>
   </section>
 
   <div class="toolbar">
     <div class="filters" id="filters" role="group" aria-label="Filtrar per responsable"></div>
     <div class="actions">
       <button type="button" class="primary" id="addbtn">Nova tasca</button>
-      <button type="button" class="ghost" id="expbtn">Exporta</button>
+      <button type="button" class="ghost" id="expbtn">Exporta tauler.json</button>
       <button type="button" class="ghost" id="impbtn">Importa</button>
-      <button type="button" class="ghost" id="resetbtn">Restableix</button>
+      <button type="button" class="ghost" id="resetbtn">Descarta els meus canvis</button>
       <input type="file" id="imp" accept="application/json,.json" hidden>
     </div>
   </div>
 
-  <form class="newform" id="newform" hidden>
-    <label for="f-title">Tasca
+  <form class="newform" id="newform" hidden autocomplete="off">
+    <label class="wide" for="f-title">Tasca
       <input id="f-title" type="text" maxlength="120" required placeholder="Per exemple: Configurar el servidor DHCP">
     </label>
     <label for="f-owner">Responsable
-      <select id="f-owner"></select>
+      <input id="f-owner" type="text" list="owners" maxlength="40" required placeholder="Tria o escriu un nom">
     </label>
     <label for="f-fase">Fase
-      <select id="f-fase"></select>
+      <input id="f-fase" type="text" list="fases" maxlength="60" placeholder="Tria o escriu una fase">
+    </label>
+    <label for="f-col">Columna
+      <select id="f-col"></select>
+    </label>
+    <label class="wide" for="f-note">Nota
+      <input id="f-note" type="text" maxlength="160" placeholder="Opcional">
     </label>
     <button type="submit" class="primary">Afegeix</button>
+    <datalist id="owners"></datalist>
+    <datalist id="fases"></datalist>
   </form>
 
   <p class="note" id="note" role="status"></p>
@@ -187,27 +200,29 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   <main class="board" id="board"></main>
 
   <p class="hint">Arrossega les targetes entre columnes o fes servir el menú «Moure a». Una tasca només passa a Finalitzat quan el treball està complet. El tauler es revisa al final de cada fase, igual que la taula de riscos.</p>
-  <p class="hint">Els canvis es desen només en aquest navegador. Per compartir-los, fes servir «Exporta» i puja el fitxer <code>tauler.json</code> al repositori: qui obri el tauler sense canvis propis el veurà tal com l'has deixat.</p>
+  <p class="hint">Els teus canvis es guarden en aquest navegador fins que els publiques. Prem «Exporta tauler.json», substitueix el fitxer del repositori pel nou i fes <code>git add</code>, <code>git commit</code> i <code>git push</code>. Quan GitHub Pages acabi de publicar, tothom veurà el mateix tauler que tu.</p>
 </div>
 <script>(function () {
   'use strict';
 
-  var KEY = 'puig-kanban-v1';
+  // Els canvis propis es guarden com a esborrany en aquest navegador.
+  // La versió que veu tothom és sempre la de tauler.json al repositori.
+  var KEY = 'puig-kanban-v2';
   var COLS = [
     { id: 'pendent', name: 'Pendent', empty: 'Cap tasca pendent.' },
     { id: 'curs', name: 'En curs', empty: 'Arrossega aquí la tasca que comences.' },
     { id: 'revisio', name: 'En revisió', empty: 'Aquí van les tasques que cal comprovar.' },
     { id: 'finalitzat', name: 'Finalitzat', empty: 'Encara no hi ha tasques acabades.' }
   ];
-  var OWNERS = ['Jugraj', 'Federico', 'Tots dos'];
+  var KNOWN = ['Jugraj', 'Federico', 'Tots dos'];
   var FASES = ['Anàlisi', 'Disseny', 'Entorn virtual', 'Xarxa i firewall', 'Serveis bàsics', 'Aplicació de gestió', 'Web, DMZ i còpies', 'Proves i memòria'];
 
-  // Proposta inicial; si existeix tauler.json al repositori, té prioritat.
+  // Proposta inicial: només es veu si no es pot llegir tauler.json.
   var SEED = [
   {
     "id": "t01",
     "title": "Definir els requisits funcionals i no funcionals",
-    "fase": 1,
+    "fase": "F1 · Anàlisi",
     "owner": "Tots dos",
     "status": "finalitzat",
     "pos": 10,
@@ -216,7 +231,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t02",
     "title": "Analitzar els usuaris, els rols i els casos d'ús",
-    "fase": 1,
+    "fase": "F1 · Anàlisi",
     "owner": "Tots dos",
     "status": "finalitzat",
     "pos": 20,
@@ -225,7 +240,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t03",
     "title": "Fer l'anàlisi de riscos",
-    "fase": 1,
+    "fase": "F1 · Anàlisi",
     "owner": "Tots dos",
     "status": "finalitzat",
     "pos": 30,
@@ -234,7 +249,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t04",
     "title": "Dissenyar el model de dades",
-    "fase": 2,
+    "fase": "F2 · Disseny",
     "owner": "Federico",
     "status": "finalitzat",
     "pos": 40,
@@ -243,7 +258,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t05",
     "title": "Proposar l'adreçament de les VLAN",
-    "fase": 2,
+    "fase": "F2 · Disseny",
     "owner": "Jugraj",
     "status": "finalitzat",
     "pos": 50,
@@ -252,7 +267,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t06",
     "title": "Fer el prototip visual de les pantalles",
-    "fase": 2,
+    "fase": "F2 · Disseny",
     "owner": "Federico",
     "status": "finalitzat",
     "pos": 60,
@@ -261,7 +276,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t07",
     "title": "Triar les tecnologies i el cronograma",
-    "fase": 2,
+    "fase": "F2 · Disseny",
     "owner": "Tots dos",
     "status": "finalitzat",
     "pos": 70,
@@ -270,7 +285,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t08",
     "title": "Dibuixar el diagrama definitiu de la xarxa",
-    "fase": 2,
+    "fase": "F2 · Disseny",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 10,
@@ -279,7 +294,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t09",
     "title": "Preparar l'entorn de virtualització",
-    "fase": 3,
+    "fase": "F3 · Entorn virtual",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 20,
@@ -288,7 +303,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t10",
     "title": "Crear el repositori del projecte",
-    "fase": 3,
+    "fase": "F3 · Entorn virtual",
     "owner": "Federico",
     "status": "pendent",
     "pos": 30,
@@ -297,7 +312,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t11",
     "title": "Crear les màquines virtuals",
-    "fase": 3,
+    "fase": "F3 · Entorn virtual",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 40,
@@ -306,7 +321,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t12",
     "title": "Configurar les VLAN al switch gestionable",
-    "fase": 4,
+    "fase": "F4 · Xarxa i firewall",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 50,
@@ -315,7 +330,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t13",
     "title": "Instal·lar pfSense o OPNsense",
-    "fase": 4,
+    "fase": "F4 · Xarxa i firewall",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 60,
@@ -324,7 +339,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t14",
     "title": "Escriure les regles del firewall",
-    "fase": 4,
+    "fase": "F4 · Xarxa i firewall",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 70,
@@ -333,7 +348,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t15",
     "title": "Provar cada VLAN per separat",
-    "fase": 4,
+    "fase": "F4 · Xarxa i firewall",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 80,
@@ -342,7 +357,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t16",
     "title": "Configurar DNS i DHCP",
-    "fase": 5,
+    "fase": "F5 · Serveis bàsics",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 90,
@@ -351,7 +366,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t17",
     "title": "Crear el directori d'usuaris i els rols",
-    "fase": 5,
+    "fase": "F5 · Serveis bàsics",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 100,
@@ -360,7 +375,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t18",
     "title": "Configurar els fitxers compartits",
-    "fase": 5,
+    "fase": "F5 · Serveis bàsics",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 110,
@@ -369,7 +384,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t19",
     "title": "Crear la base de dades",
-    "fase": 6,
+    "fase": "F6 · Aplicació de gestió",
     "owner": "Federico",
     "status": "pendent",
     "pos": 120,
@@ -378,7 +393,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t20",
     "title": "Programar l'inici de sessió",
-    "fase": 6,
+    "fase": "F6 · Aplicació de gestió",
     "owner": "Federico",
     "status": "pendent",
     "pos": 130,
@@ -387,7 +402,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t21",
     "title": "Programar la gestió de clients",
-    "fase": 6,
+    "fase": "F6 · Aplicació de gestió",
     "owner": "Federico",
     "status": "pendent",
     "pos": 140,
@@ -396,7 +411,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t22",
     "title": "Programar la gestió de reparacions",
-    "fase": 6,
+    "fase": "F6 · Aplicació de gestió",
     "owner": "Federico",
     "status": "pendent",
     "pos": 150,
@@ -405,7 +420,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t23",
     "title": "Fer el tauler principal i el panell d'administració",
-    "fase": 6,
+    "fase": "F6 · Aplicació de gestió",
     "owner": "Federico",
     "status": "pendent",
     "pos": 160,
@@ -414,7 +429,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t24",
     "title": "Publicar la pàgina web i el formulari de contacte",
-    "fase": 7,
+    "fase": "F7 · Web, DMZ i còpies",
     "owner": "Federico",
     "status": "pendent",
     "pos": 170,
@@ -423,7 +438,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t25",
     "title": "Configurar el servidor web a la DMZ amb HTTPS",
-    "fase": 7,
+    "fase": "F7 · Web, DMZ i còpies",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 180,
@@ -432,7 +447,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t26",
     "title": "Automatitzar les còpies de seguretat",
-    "fase": 7,
+    "fase": "F7 · Web, DMZ i còpies",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 190,
@@ -441,7 +456,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t27",
     "title": "Configurar el correu corporatiu",
-    "fase": 7,
+    "fase": "F7 · Web, DMZ i còpies",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 200,
@@ -450,7 +465,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t28",
     "title": "Provar la xarxa i la seguretat",
-    "fase": 8,
+    "fase": "F8 · Proves i memòria",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 210,
@@ -459,7 +474,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t29",
     "title": "Provar l'aplicació de gestió",
-    "fase": 8,
+    "fase": "F8 · Proves i memòria",
     "owner": "Federico",
     "status": "pendent",
     "pos": 220,
@@ -468,7 +483,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t30",
     "title": "Provar la còpia i la recuperació",
-    "fase": 8,
+    "fase": "F8 · Proves i memòria",
     "owner": "Jugraj",
     "status": "pendent",
     "pos": 230,
@@ -477,7 +492,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t31",
     "title": "Documentar tota la infraestructura",
-    "fase": 8,
+    "fase": "F8 · Proves i memòria",
     "owner": "Federico",
     "status": "pendent",
     "pos": 240,
@@ -486,7 +501,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   {
     "id": "t32",
     "title": "Redactar la memòria i preparar la presentació",
-    "fase": 8,
+    "fase": "F8 · Proves i memòria",
     "owner": "Tots dos",
     "status": "pendent",
     "pos": 250,
@@ -495,7 +510,9 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
 ];
 
   var tasks = [];
-  var touched = false;
+  var pubSig = null;   // signatura de tauler.json; null si no s'ha pogut llegir
+  var ready = false;
+  var lost = null;     // esborrany local deixat de banda, recuperable
   var filter = 'Tothom';
   var dragId = null;
   var noteTimer = null;
@@ -509,24 +526,36 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   }
   function byPos(a, b) { return a.pos - b.pos; }
 
-  function say(text, isErr, keep) {
+  function say(text, isErr, keep, label, fn) {
     var n = $('note');
     n.textContent = text;
     n.className = 'note' + (isErr ? ' err' : '');
+    if (label && fn) {
+      var b = el('button', 'link', label);
+      b.type = 'button';
+      b.addEventListener('click', fn);
+      n.append(' ', b);
+    }
     clearTimeout(noteTimer);
-    if (!keep) noteTimer = setTimeout(function () { n.textContent = ''; n.className = 'note'; }, 6000);
+    if (!keep) noteTimer = setTimeout(function () { n.textContent = ''; n.className = 'note'; }, 8000);
   }
 
+  // ---------- Dades ----------
+  function faseText(v) {
+    if (v == null) return '';
+    var s = String(v).trim();
+    if (/^[1-8]$/.test(s)) return 'F' + s + ' · ' + FASES[+s - 1];
+    return s.slice(0, 60);
+  }
   function clean(id, d) {
-    var st = COLS.some(function (c) { return c.id === d.status; }) ? d.status : 'pendent';
-    var fase = Math.min(8, Math.max(1, parseInt(d.fase, 10) || 1));
+    var owner = String(d.owner == null ? '' : d.owner).trim().slice(0, 40) || 'Tots dos';
     return {
       id: id,
       title: String(d.title || 'Tasca sense títol'),
-      fase: fase,
-      owner: OWNERS.indexOf(d.owner) >= 0 ? d.owner : 'Tots dos',
-      status: st,
-      pos: typeof d.pos === 'number' ? d.pos : 0,
+      fase: faseText(d.fase),
+      owner: owner,
+      status: COLS.some(function (c) { return c.id === d.status; }) ? d.status : 'pendent',
+      pos: typeof d.pos === 'number' && isFinite(d.pos) ? d.pos : 0,
       note: d.note ? String(d.note) : ''
     };
   }
@@ -534,12 +563,46 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     return list.map(function (x, i) { return clean(String((x && x.id) || ('i' + i)), x || {}); });
   }
 
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(tasks)); }
-    catch (e) { say('No s\'ha pogut desar en aquest navegador. Exporta el tauler per no perdre els canvis.', true); }
+  // Signatura independent de l'ordre: serveix per saber si dues versions són iguals.
+  function hash(str) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return (h >>> 0).toString(16);
   }
-  function commit() { touched = true; save(); render(); }
+  function sig(list) {
+    var rows = list.map(function (t) { return [t.id, t.title, t.fase, t.owner, t.status, t.pos, t.note]; })
+      .sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
+    return hash(JSON.stringify(rows));
+  }
 
+  // ---------- Esborrany local ----------
+  function readDraft() {
+    try {
+      var s = localStorage.getItem(KEY);
+      if (!s) return null;
+      var d = JSON.parse(s);
+      if (!d || !Array.isArray(d.tasks) || !d.tasks.length) return null;
+      return { base: d.base || null, tasks: cleanList(d.tasks) };
+    } catch (e) { return null; }
+  }
+  function clearDraft() { try { localStorage.removeItem(KEY); } catch (e) { /* res */ } }
+  function writeDraft() {
+    try {
+      if (pubSig && sig(tasks) === pubSig) clearDraft();
+      else localStorage.setItem(KEY, JSON.stringify({ base: pubSig, tasks: tasks }));
+    } catch (e) {
+      say('No s\'ha pogut desar en aquest navegador. Exporta el tauler per no perdre els canvis.', true);
+    }
+  }
+  function commit() { writeDraft(); render(); }
+
+  function guard() {
+    if (ready) return true;
+    say('Espera un moment, s\'està carregant el tauler.', true);
+    return false;
+  }
+
+  // ---------- Operacions ----------
   function posFor(status, beforeId, excludeId) {
     var list = tasks.filter(function (t) { return t.status === status && t.id !== excludeId; }).sort(byPos);
     if (beforeId) {
@@ -551,8 +614,8 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     }
     return (list.length ? list[list.length - 1].pos : 0) + 10;
   }
-
   function move(id, status, beforeId) {
+    if (!guard()) { render(); return; }
     var t = tasks.find(function (x) { return x.id === id; });
     if (!t) return;
     if (t.status === status && !beforeId) return;
@@ -560,10 +623,31 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     t.status = status;
     commit();
   }
-
   function remove(id) {
+    if (!guard()) return;
     tasks = tasks.filter(function (t) { return t.id !== id; });
     commit();
+  }
+
+  // ---------- Pintat ----------
+  function owners() {
+    var seen = {};
+    var extra = [];
+    tasks.forEach(function (t) {
+      if (KNOWN.indexOf(t.owner) < 0 && !seen[t.owner]) { seen[t.owner] = 1; extra.push(t.owner); }
+    });
+    extra.sort();
+    return KNOWN.concat(extra);
+  }
+  function faseOptions() {
+    var base = FASES.map(function (f, i) { return 'F' + (i + 1) + ' · ' + f; });
+    tasks.forEach(function (t) { if (t.fase && base.indexOf(t.fase) < 0) base.push(t.fase); });
+    return base;
+  }
+  function fillList(id, values) {
+    var dl = $(id);
+    dl.textContent = '';
+    values.forEach(function (v) { var o = document.createElement('option'); o.value = v; dl.append(o); });
   }
 
   function renderProgress() {
@@ -576,10 +660,22 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     $('pcount').textContent = done + ' de ' + total + ' tasques finalitzades · ' + pct + '%';
   }
 
+  function renderState() {
+    var p = $('state');
+    if (!ready) { p.hidden = true; return; }
+    p.hidden = false;
+    if (pubSig === null) { p.textContent = 'Només en aquest navegador'; p.dataset.s = 'local'; return; }
+    var dirty = sig(tasks) !== pubSig;
+    p.textContent = dirty ? 'Canvis sense publicar' : 'Igual que tauler.json';
+    p.dataset.s = dirty ? 'dirty' : 'clean';
+  }
+
   function renderFilters() {
+    var names = ['Tothom'].concat(owners());
+    if (names.indexOf(filter) < 0) filter = 'Tothom';
     var box = $('filters');
     box.textContent = '';
-    ['Tothom'].concat(OWNERS).forEach(function (name) {
+    names.forEach(function (name) {
       var n = name === 'Tothom' ? tasks.length : tasks.filter(function (t) { return t.owner === name; }).length;
       var b = el('button', 'fbtn');
       b.type = 'button';
@@ -594,10 +690,10 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     var c = el('article', 'card');
     c.dataset.id = t.id;
     var top = el('div', 'top');
-    var tag = el('span', 'tag', 'F' + t.fase + ' · ' + FASES[t.fase - 1]);
+    top.append(el('span', 'tag', t.fase));
     var chip = el('span', 'chip', t.owner);
     chip.dataset.o = t.owner;
-    top.append(tag, chip);
+    top.append(chip);
     c.append(top, el('h3', 'ctitle', t.title));
     if (t.note) c.append(el('p', 'cnote', t.note));
 
@@ -658,6 +754,9 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   function render() {
     renderProgress();
     renderFilters();
+    renderState();
+    fillList('owners', owners());
+    fillList('fases', faseOptions());
     var board = $('board');
     board.textContent = '';
     var vis = tasks.filter(function (t) { return filter === 'Tothom' || t.owner === filter; });
@@ -685,10 +784,8 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     });
   }
 
-  // Formulari de nova tasca
-  OWNERS.forEach(function (o) { var op = el('option', null, o); op.value = o; $('f-owner').append(op); });
-  FASES.forEach(function (f, i) { var op = el('option', null, 'F' + (i + 1) + ' · ' + f); op.value = String(i + 1); $('f-fase').append(op); });
-  $('f-fase').value = '3';
+  // ---------- Formulari de nova tasca ----------
+  COLS.forEach(function (c) { var o = el('option', null, c.name); o.value = c.id; $('f-col').append(o); });
 
   $('addbtn').addEventListener('click', function () {
     var f = $('newform');
@@ -697,26 +794,30 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
   });
   $('newform').addEventListener('submit', function (e) {
     e.preventDefault();
+    if (!guard()) return;
     var title = $('f-title').value.trim();
+    var owner = $('f-owner').value.trim();
     if (!title) { say('Escriu el nom de la tasca abans d\'afegir-la.', true); return; }
-    tasks.push({
-      id: 'n' + Date.now().toString(36) + Math.floor(Math.random() * 1000),
-      title: title,
-      fase: parseInt($('f-fase').value, 10),
-      owner: $('f-owner').value,
-      status: 'pendent',
-      pos: posFor('pendent', null, null),
-      note: ''
+    if (!owner) { say('Indica qui n\'és el responsable. Pots triar un nom de la llista o escriure\'n un altre.', true); return; }
+    var status = $('f-col').value;
+    var t = clean('n' + Date.now().toString(36) + Math.floor(Math.random() * 1000), {
+      title: title.slice(0, 120),
+      fase: $('f-fase').value,
+      owner: owner,
+      status: status,
+      pos: posFor(status, null, null),
+      note: $('f-note').value.trim().slice(0, 160)
     });
+    tasks.push(t);
     $('f-title').value = '';
+    $('f-note').value = '';
     $('newform').hidden = true;
     commit();
-    say('Tasca afegida a Pendent.');
+    say('Tasca afegida a ' + COLS.filter(function (c) { return c.id === status; })[0].name + '.');
   });
 
-  // Exportar, importar i restablir
-  $('expbtn').addEventListener('click', function () {
-    var data = JSON.stringify(tasks.slice().sort(byPos), null, 2);
+  // ---------- Exportar, importar i descartar ----------
+  function download(data) {
     var blob = new Blob([data], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -726,8 +827,30 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     a.click();
     a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    say('Tauler exportat com a tauler.json. Puja\'l al repositori perquè el vegi tothom.');
-  });
+  }
+  function exportJson() {
+    var data = JSON.stringify(tasks, null, 2) + '\n';
+    var fallback = function () {
+      download(data);
+      say('S\'ha baixat tauler.json. Si el navegador l\'ha anomenat «tauler (1).json», canvia-li el nom i substitueix el fitxer del repositori. Després: git add, git commit i git push.', false, true);
+    };
+    if (!window.showSaveFilePicker) { fallback(); return; }
+    window.showSaveFilePicker({
+      suggestedName: 'tauler.json',
+      types: [{ description: 'Tauler JSON', accept: { 'application/json': ['.json'] } }]
+    }).then(function (h) {
+      return h.createWritable().then(function (w) {
+        return w.write(data).then(function () { return w.close(); });
+      }).then(function () {
+        say('Desat a «' + h.name + '». Si és el tauler.json del repositori, ja només falta git add, git commit i git push.', false, true);
+      });
+    }).catch(function (err) {
+      if (err && err.name === 'AbortError') return;
+      fallback();
+    });
+  }
+  $('expbtn').addEventListener('click', exportJson);
+
   $('impbtn').addEventListener('click', function () { $('imp').click(); });
   $('imp').addEventListener('change', function (e) {
     var f = e.target.files[0];
@@ -735,6 +858,7 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     var r = new FileReader();
     r.onload = function () {
       try {
+        if (!guard()) return;
         var d = JSON.parse(r.result);
         if (!Array.isArray(d) || !d.length) throw new Error('buit');
         tasks = cleanList(d);
@@ -747,53 +871,87 @@ code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); pad
     r.readAsText(f);
     e.target.value = '';
   });
-  var resetArmed = false;
+
+  var discardArmed = false;
   $('resetbtn').addEventListener('click', function () {
     var b = $('resetbtn');
-    if (!resetArmed) {
-      resetArmed = true;
+    if (!discardArmed) {
+      discardArmed = true;
       b.textContent = 'Confirma';
-      setTimeout(function () { resetArmed = false; b.textContent = 'Restableix'; }, 3000);
+      setTimeout(function () { discardArmed = false; b.textContent = 'Descarta els meus canvis'; }, 3000);
       return;
     }
-    resetArmed = false;
-    b.textContent = 'Restableix';
-    try { localStorage.removeItem(KEY); } catch (e) { /* res */ }
-    touched = false;
-    loadInitial();
-    say('Tauler restablert a la versió del repositori.');
+    discardArmed = false;
+    b.textContent = 'Descarta els meus canvis';
+    clearDraft();
+    lost = null;
+    start();
+    say('S\'han descartat els canvis locals i es mostra tauler.json.');
   });
 
-  function stored() {
-    try {
-      var s = localStorage.getItem(KEY);
-      if (!s) return null;
-      var d = JSON.parse(s);
-      return Array.isArray(d) && d.length ? cleanList(d) : null;
-    } catch (e) { return null; }
+  function recover() {
+    if (!lost) return;
+    tasks = lost.tasks;
+    lost = null;
+    writeDraft();
+    render();
+    say('S\'han recuperat els teus canvis anteriors. Exporta el tauler si vols publicar-los.', false, true);
   }
 
-  function loadInitial() {
-    tasks = cleanList(SEED);
+  // ---------- Càrrega ----------
+  function start() {
+    ready = false;
+    var draft = readDraft();
+    tasks = draft ? draft.tasks : cleanList(SEED);
     render();
-    fetch('tauler.json', { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('no')); })
+    say('Carregant el tauler…', false, true);
+
+    fetch('tauler.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.json();
+      })
       .then(function (d) {
-        if (touched || !Array.isArray(d) || !d.length) return;
-        tasks = cleanList(d);
+        if (!Array.isArray(d) || !d.length) throw new Error('buit');
+        var pub = cleanList(d);
+        pubSig = sig(pub);
+        say('', false, true);
+        if (draft) {
+          var ds = sig(draft.tasks);
+          if (ds === pubSig) {
+            clearDraft();
+            tasks = pub;
+          } else if (draft.base === pubSig) {
+            tasks = draft.tasks;
+            say('Tens canvis sense publicar. Exporta tauler.json, substitueix el del repositori i fes git push perquè els vegi tothom.', false, true);
+          } else {
+            tasks = pub;
+            lost = draft;
+            say('tauler.json s\'ha actualitzat des que vas fer els teus canvis i ara es mostra la versió nova.', false, true, 'Recupera els meus canvis', recover);
+          }
+        } else {
+          tasks = pub;
+        }
+        ready = true;
         render();
       })
-      .catch(function () { /* sense tauler.json: es queda la proposta inicial */ });
+      .catch(function () {
+        pubSig = null;
+        ready = true;
+        if (draft) {
+          tasks = draft.tasks;
+          say('No s\'ha pogut llegir tauler.json. Es mostren els canvis desats en aquest navegador.', true, true);
+        } else {
+          tasks = cleanList(SEED);
+          say(location.protocol === 'file:'
+            ? 'Has obert el fitxer directament i el navegador no deixa llegir tauler.json. Fes servir un servidor local (per exemple, python -m http.server) o la pàgina publicada.'
+            : 'No s\'ha pogut llegir tauler.json. Es mostra la proposta inicial.', true, true);
+        }
+        render();
+      });
   }
 
-  var s = stored();
-  if (s) {
-    tasks = s;
-    render();
-    say('Tauler recuperat d\'aquest navegador.');
-  } else {
-    loadInitial();
-  }
+  start();
 })();
 </script>
 </body>
