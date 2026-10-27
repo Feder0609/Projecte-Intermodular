@@ -14,7 +14,7 @@
     "fase": "F1 · Anàlisi",
     "owner": "Tots dos",
     "status": "finalitzat",
-    "pos": 20,
+    "pos": 40,
     "note": "CU1 a CU5"
   },
   {
@@ -31,8 +31,8 @@
     "title": "Dissenyar el model de dades",
     "fase": "F2 · Disseny",
     "owner": "Federico",
-    "status": "finalitzat",
-    "pos": 40,
+    "status": "pendent",
+    "pos": 260,
     "note": "Usuari, client, reparació, historial, contacte i còpia"
   },
   {
@@ -40,8 +40,8 @@
     "title": "Proposar l'adreçament de les VLAN",
     "fase": "F2 · Disseny",
     "owner": "Jugraj",
-    "status": "finalitzat",
-    "pos": 50,
+    "status": "pendent",
+    "pos": 280,
     "note": "VLAN 10 a 50, xarxes 192.168.X.0/24"
   },
   {
@@ -50,7 +50,7 @@
     "fase": "F2 · Disseny",
     "owner": "Federico",
     "status": "finalitzat",
-    "pos": 60,
+    "pos": 20,
     "note": "Inici de sessió, tauler, clients, reparacions i web pública"
   },
   {
@@ -58,8 +58,8 @@
     "title": "Triar les tecnologies i el cronograma",
     "fase": "F2 · Disseny",
     "owner": "Tots dos",
-    "status": "finalitzat",
-    "pos": 70,
+    "status": "pendent",
+    "pos": 270,
     "note": ""
   },
   {
@@ -67,8 +67,8 @@
     "title": "Dibuixar el diagrama definitiu de la xarxa",
     "fase": "F2 · Disseny",
     "owner": "Jugraj",
-    "status": "pendent",
-    "pos": 10,
+    "status": "curs",
+    "pos": 20,
     "note": "draw.io; lliurament de la fase 2"
   },
   {
@@ -85,8 +85,8 @@
     "title": "Crear el repositori del projecte",
     "fase": "F3 · Entorn virtual",
     "owner": "Federico",
-    "status": "pendent",
-    "pos": 30,
+    "status": "curs",
+    "pos": 10,
     "note": "Git i GitHub"
   },
   {
