@@ -286,5 +286,14 @@
     "status": "pendent",
     "pos": 250,
     "note": ""
+  },
+  {
+    "id": "nmw98a8of780",
+    "title": "Fase5-Tecnologias y Herramientas",
+    "fase": "Documentacion",
+    "owner": "Tots dos",
+    "status": "finalitzat",
+    "pos": 60,
+    "note": "Organizado en la carpeta compartida de Google Drive"
   }
 ]
